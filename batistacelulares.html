@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tienda de Ropa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    .hidden-admin {
+      display: none;
+    }
+
+    .fade-in {
+      animation: fadeIn 1s ease-in-out both;
+    }
+
+    .scale-hover {
+      transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .scale-hover:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #logout-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <header class="bg-pink-600 text-white p-6 shadow-md relative fade-in">
+    <h1 class="text-3xl font-bold text-center">Batista Colombia</h1>
+    <button onclick="showLogin()" class="absolute top-1 right-1 text-white text-sm bg-pink-500 px-2 py-1 rounded shadow">Administrador</button>
+    <div class="flex justify-center flex-wrap gap-2 mt-4">
+      <button onclick="filterCategory('Todas')" class="bg-white text-pink-600 px-3 py-1 rounded-full scale-hover text-sm">Todas</button>
+      <button onclick="filterCategory('Blusas')" class="bg-white text-pink-600 px-3 py-1 rounded-full scale-hover text-sm">Blusas</button>
+      <button onclick="filterCategory('Camisas')" class="bg-white text-pink-600 px-3 py-1 rounded-full scale-hover text-sm">Camisas</button>
+      <button onclick="filterCategory('Shorts')" class="bg-white text-pink-600 px-3 py-1 rounded-full scale-hover text-sm">Shorts</button>
+      <button onclick="filterCategory('Vestidos')" class="bg-white text-pink-600 px-3 py-1 rounded-full scale-hover text-sm">Vestidos</button>
+      <button onclick="filterCategory('Set')" class="bg-white text-pink-600 px-3 py-1 rounded-full scale-hover text-sm">Set</button>
+      <button onclick="filterCategory('Promo')" class="bg-blue-500 text-white px-3 py-1 rounded-full scale-hover text-sm">Promo</button>
+    </div>
+    <button id="logout-btn" onclick="cerrarSesion()" class="hidden-admin text-sm bg-white text-pink-600 px-2 py-1 rounded shadow">Cerrar sesión</button>
+  </header>
+
+  <footer class="bg-white text-center p-6 shadow-inner fade-in space-y-4">
+    <div class="flex justify-center space-x-4 text-pink-600 text-2xl">
+      <a href="https://www.instagram.com/batista.col?igsh=MTVmOGZzd21zM2d3OQ==" target="_blank" aria-label="Instagram"><i class="ph ph-instagram-logo"></i></a>
+      <a href="https://wa.me/57xxxxxxxxxx" target="_blank" aria-label="WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>
+      <a href="mailto:contacto@batista.com" aria-label="Correo"><i class="ph ph-envelope-simple"></i></a>
+    </div>
+    <p class="text-xs text-gray-500">© Tienda Oficial Batista Colombia. Todos los derechos reservados.</p>
+  </footer>
+
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 fade-in">
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+  </main>
+
+  <div id="admin-login" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 fade-in">
+    <div class="bg-white p-6 rounded-xl shadow-xl text-center w-11/12 max-w-sm">
+      <h2 class="text-xl font-bold mb-4">Ingresar como administrador</h2>
+      <input id="admin-pass" type="password" placeholder="Contraseña" class="border rounded p-2 mb-4 w-full" onkeydown="if(event.key==='Enter'){checkLogin()}" />
+      <div class="space-x-4">
+        <button onclick="checkLogin()" class="bg-pink-600 text-white px-4 py-2 rounded">Entrar</button>
+        <button onclick="hideLogin()" class="text-gray-500">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <button id="mostrar-formulario" onclick="mostrarFormulario()" class="hidden-admin fixed bottom-6 right-6 bg-pink-600 text-white p-4 rounded-full shadow-lg z-50 scale-hover">+</button>
+
+  <div id="admin-panel" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 fade-in">
+    <div class="bg-white p-6 rounded-xl shadow-xl w-11/12 max-w-2xl relative">
+      <button onclick="ocultarFormulario()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&#10005;</button>
+      <h3 class="text-lg font-bold mb-2">Agregar Producto</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <input id="nombre" type="text" placeholder="Nombre" class="border p-2 rounded" />
+        <input id="precio" type="text" placeholder="Precio" class="border p-2 rounded" />
+        <input id="descripcion" type="text" placeholder="Descripción" class="border p-2 rounded" />
+        <select id="categoria" class="border p-2 rounded">
+          <option value="Blusas">Blusas</option>
+          <option value="Camisas">Camisas</option>
+          <option value="Shorts">Shorts</option>
+          <option value="Vestidos">Vestidos</option>
+          <option value="Set">Set</option>
+          <option value="Promo">Promo</option>
+        </select>
+        <input id="imagen-url" type="text" placeholder="URL de la imagen" class="border p-2 rounded" />
+        <button onclick="agregarProducto()" class="bg-green-500 text-white rounded px-4 py-2">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8Sz7Up_0piJnZFynWLrXooFT-pbBJwdY",
+      authDomain: "tienda-batista-web.firebaseapp.com",
+      projectId: "tienda-batista-web",
+      storageBucket: "tienda-batista-web.appspot.com",
+      messagingSenderId: "768880971220",
+      appId: "1:768880971220:web:1194932a54f667d1879a41"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const productosRef = collection(db, "productos");
+
+    const adminPassword = "ropa123";
+    let adminActivo = false;
+    let productos = [];
+
+    async function cargarProductos() {
+      const snapshot = await getDocs(productosRef);
+      productos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderProductos();
+    }
+
+    function renderProductos(filtro = "Todas") {
+      const grid = document.getElementById("product-grid");
+      grid.innerHTML = "";
+      productos.filter(p => filtro === "Todas" || p.categoria === filtro).forEach((producto) => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
+        card.innerHTML = `
+          <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
+          <h4 class="font-bold text-lg">${producto.nombre}</h4>
+          <p class="text-sm text-gray-600">${producto.descripcion}</p>
+          <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
+          <button onclick="eliminarProducto('${producto.id}')" class="mt-2 text-xs text-red-500 hover:underline hidden-admin">Eliminar</button>
+        `;
+        grid.appendChild(card);
+      });
+
+      if (adminActivo) {
+        setTimeout(() => {
+          document.querySelectorAll(".hidden-admin").forEach(el => el.classList.remove("hidden-admin"));
+          document.getElementById("logout-btn").classList.remove("hidden-admin");
+          document.getElementById("mostrar-formulario").classList.remove("hidden-admin");
+        }, 0);
+      }
+    }
+
+    async function agregarProducto() {
+      const nombre = document.getElementById("nombre").value;
+      const precio = document.getElementById("precio").value;
+      const descripcion = document.getElementById("descripcion").value;
+      const categoria = document.getElementById("categoria").value;
+      const imagen = document.getElementById("imagen-url").value;
+
+      if (!imagen) {
+        alert("Por favor, ingresa una URL de imagen válida.");
+        return;
+      }
+
+      const nuevoProducto = { nombre, precio, descripcion, categoria, imagen };
+      await addDoc(productosRef, nuevoProducto);
+      await cargarProductos();
+      ocultarFormulario();
+    }
+
+    async function eliminarProducto(id) {
+      await deleteDoc(doc(productosRef, id));
+      await cargarProductos();
+    }
+
+    function showLogin() {
+      document.getElementById("admin-login").classList.remove("hidden");
+    }
+
+    function hideLogin() {
+      document.getElementById("admin-login").classList.add("hidden");
+    }
+
+    function checkLogin() {
+      const input = document.getElementById("admin-pass").value;
+      if (input === adminPassword) {
+        adminActivo = true;
+        hideLogin();
+        renderProductos();
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    }
+
+    function cerrarSesion() {
+      adminActivo = false;
+      document.querySelectorAll(".hidden-admin").forEach(el => el.classList.add("hidden-admin"));
+      document.getElementById("admin-panel").classList.add("hidden");
+      document.getElementById("logout-btn").classList.add("hidden-admin");
+      document.getElementById("mostrar-formulario").classList.add("hidden-admin");
+      renderProductos();
+    }
+
+    function filterCategory(cat) {
+      renderProductos(cat);
+    }
+
+    function mostrarFormulario() {
+      document.getElementById("admin-panel").classList.remove("hidden");
+    }
+
+    function ocultarFormulario() {
+      document.getElementById("admin-panel").classList.add("hidden");
+    }
+
+    window.showLogin = showLogin;
+    window.hideLogin = hideLogin;
+    window.checkLogin = checkLogin;
+    window.cerrarSesion = cerrarSesion;
+    window.agregarProducto = agregarProducto;
+    window.eliminarProducto = eliminarProducto;
+    window.filterCategory = filterCategory;
+    window.mostrarFormulario = mostrarFormulario;
+    window.ocultarFormulario = ocultarFormulario;
+
+    window.onload = cargarProductos;
+  </script>
+</body>
+</html>
