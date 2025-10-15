@@ -128,29 +128,33 @@
     }
 
     function renderProductos(filtro = "Todas") {
-      const grid = document.getElementById("product-grid");
-      grid.innerHTML = "";
-      productos.filter(p => filtro === "Todas" || p.categoria === filtro).forEach((producto) => {
-        const card = document.createElement("div");
-        card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
-        card.innerHTML = `
-          <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
-          <h4 class="font-bold text-lg">${producto.nombre}</h4>
-          <p class="text-sm text-gray-600">${producto.descripcion}</p>
-          <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
-          <button onclick="eliminarProducto('${producto.id}')" class="mt-2 text-xs text-red-500 hover:underline hidden-admin">Eliminar</button>
-        `;
-        grid.appendChild(card);
-      });
+  const grid = document.getElementById("product-grid");
+  grid.innerHTML = "";
+  productos.filter(p => filtro === "Todas" || p.categoria === filtro).forEach((producto) => {
+    const card = document.createElement("div");
+    card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
+    card.innerHTML = `
+      <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
+      <h4 class="font-bold text-lg">${producto.nombre}</h4>
+      <p class="text-sm text-gray-600">${producto.descripcion}</p>
+      <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
+      <div class="hidden-admin flex justify-between text-xs mt-2">
+        <button onclick="editarProducto('${producto.id}')" class="text-blue-500 hover:underline">Editar</button>
+        <button onclick="eliminarProducto('${producto.id}')" class="text-red-500 hover:underline">Eliminar</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 
-      if (adminActivo) {
-        setTimeout(() => {
-          document.querySelectorAll(".hidden-admin").forEach(el => el.classList.remove("hidden-admin"));
-          document.getElementById("logout-btn").classList.remove("hidden-admin");
-          document.getElementById("mostrar-formulario").classList.remove("hidden-admin");
-        }, 0);
-      }
-    }
+  if (adminActivo) {
+    setTimeout(() => {
+      document.querySelectorAll(".hidden-admin").forEach(el => el.classList.remove("hidden-admin"));
+      document.getElementById("logout-btn").classList.remove("hidden-admin");
+      document.getElementById("mostrar-formulario").classList.remove("hidden-admin");
+    }, 0);
+  }
+}
+
 
     async function agregarProducto() {
       const nombre = document.getElementById("nombre").value;
@@ -229,3 +233,4 @@
   </script>
 </body>
 </html>
+
