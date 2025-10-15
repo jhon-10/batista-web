@@ -95,7 +95,8 @@
           <option value="Promo">Promo</option>
         </select>
         <input id="imagen-url" type="text" placeholder="URL de la imagen" class="border p-2 rounded" />
-        <button onclick="agregarProducto()" class="bg-green-500 text-white rounded px-4 py-2">Agregar</button>
+       <button onclick="guardarEdicion()" class="bg-green-500 text-white rounded px-4 py-2">Agregar</button>
+
       </div>
     </div>
   </div>
@@ -178,6 +179,47 @@
       await deleteDoc(doc(productosRef, id));
       await cargarProductos();
     }
+    import { updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+let productoEditando = null;
+
+async function editarProducto(id) {
+  const producto = productos.find(p => p.id === id);
+  if (!producto) return;
+
+  productoEditando = id;
+
+  document.getElementById("nombre").value = producto.nombre;
+  document.getElementById("precio").value = producto.precio;
+  document.getElementById("descripcion").value = producto.descripcion;
+  document.getElementById("categoria").value = producto.categoria;
+  document.getElementById("imagen-url").value = producto.imagen;
+
+  document.querySelector("#admin-panel h3").textContent = "Editar Producto";
+  document.querySelector("#admin-panel button.bg-green-500").textContent = "Guardar Cambios";
+  document.getElementById("admin-panel").classList.remove("hidden");
+}
+
+async function guardarEdicion() {
+  if (!productoEditando) return agregarProducto(); // si no hay edición, agrega nuevo
+
+  const id = productoEditando;
+  const docRef = doc(productosRef, id);
+  const nombre = document.getElementById("nombre").value.trim();
+  const precio = parseFloat(document.getElementById("precio").value.trim());
+  const descripcion = document.getElementById("descripcion").value.trim();
+  const categoria = document.getElementById("categoria").value;
+  const imagen = document.getElementById("imagen-url").value.trim();
+
+  await updateDoc(docRef, { nombre, precio, descripcion, categoria, imagen });
+
+  productoEditando = null;
+  document.querySelector("#admin-panel h3").textContent = "Agregar Producto";
+  document.querySelector("#admin-panel button.bg-green-500").textContent = "Agregar";
+  ocultarFormulario();
+  await cargarProductos();
+}
+
 
     function showLogin() {
       document.getElementById("admin-login").classList.remove("hidden");
@@ -233,4 +275,5 @@
   </script>
 </body>
 </html>
+
 
