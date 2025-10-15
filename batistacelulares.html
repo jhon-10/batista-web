@@ -36,7 +36,6 @@
     }
   </style>
 </head>
-
 <body class="bg-gray-100 text-gray-800">
   <header class="bg-pink-600 text-white p-6 shadow-md relative fade-in">
     <h1 class="text-3xl font-bold text-center">Batista Colombia</h1>
@@ -53,10 +52,6 @@
     <button id="logout-btn" onclick="cerrarSesion()" class="hidden-admin text-sm bg-white text-pink-600 px-2 py-1 rounded shadow">Cerrar sesión</button>
   </header>
 
-  <main class="max-w-6xl mx-auto p-4 sm:p-6 fade-in">
-    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
-  </main>
-
   <footer class="bg-white text-center p-6 shadow-inner fade-in space-y-4">
     <div class="flex justify-center space-x-4 text-pink-600 text-2xl">
       <a href="https://www.instagram.com/batista.col?igsh=MTVmOGZzd21zM2d3OQ==" target="_blank" aria-label="Instagram"><i class="ph ph-instagram-logo"></i></a>
@@ -66,7 +61,10 @@
     <p class="text-xs text-gray-500">© Tienda Oficial Batista Colombia. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- Login de administrador -->
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 fade-in">
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+  </main>
+
   <div id="admin-login" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 fade-in">
     <div class="bg-white p-6 rounded-xl shadow-xl text-center w-11/12 max-w-sm">
       <h2 class="text-xl font-bold mb-4">Ingresar como administrador</h2>
@@ -78,14 +76,12 @@
     </div>
   </div>
 
-  <!-- Botón flotante para agregar producto -->
   <button id="mostrar-formulario" onclick="mostrarFormulario()" class="hidden-admin fixed bottom-6 right-6 bg-pink-600 text-white p-4 rounded-full shadow-lg z-50 scale-hover">+</button>
 
-  <!-- Panel agregar/editar -->
   <div id="admin-panel" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 fade-in">
     <div class="bg-white p-6 rounded-xl shadow-xl w-11/12 max-w-2xl relative">
       <button onclick="ocultarFormulario()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&#10005;</button>
-      <h3 id="form-title" class="text-lg font-bold mb-2">Agregar Producto</h3>
+      <h3 class="text-lg font-bold mb-2">Agregar Producto</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
         <input id="nombre" type="text" placeholder="Nombre" class="border p-2 rounded" />
         <input id="precio" type="text" placeholder="Precio" class="border p-2 rounded" />
@@ -99,15 +95,14 @@
           <option value="Promo">Promo</option>
         </select>
         <input id="imagen-url" type="text" placeholder="URL de la imagen" class="border p-2 rounded" />
-        <button onclick="guardarEdicion()" class="bg-green-500 text-white rounded px-4 py-2">Agregar</button>
+        <button onclick="agregarProducto()" class="bg-green-500 text-white rounded px-4 py-2">Agregar</button>
       </div>
     </div>
   </div>
 
-  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC8Sz7Up_0piJnZFynWLrXooFT-pbBJwdY",
@@ -125,141 +120,101 @@
     const adminPassword = "ropa123";
     let adminActivo = false;
     let productos = [];
-    let productoEditando = null;
 
-    // Cargar productos
     async function cargarProductos() {
       const snapshot = await getDocs(productosRef);
       productos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderProductos();
     }
 
-    // Renderizar productos
     function renderProductos(filtro = "Todas") {
       const grid = document.getElementById("product-grid");
       grid.innerHTML = "";
-      productos
-        .filter(p => filtro === "Todas" || p.categoria === filtro)
-        .forEach((producto) => {
-          const card = document.createElement("div");
-          card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
-          card.innerHTML = `
-            <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
-            <h4 class="font-bold text-lg">${producto.nombre}</h4>
-            <p class="text-sm text-gray-600">${producto.descripcion}</p>
-            <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
-            <div class="acciones-admin hidden-admin flex justify-between text-xs mt-2">
-              <button onclick="editarProducto('${producto.id}')" class="text-blue-500 hover:underline">Editar</button>
-              <button onclick="eliminarProducto('${producto.id}')" class="text-red-500 hover:underline">Eliminar</button>
-            </div>
-          `;
-          grid.appendChild(card);
-        });
-
-      actualizarVisibilidadAdmin();
-    }
-
-    // Mostrar/ocultar elementos admin
-    function actualizarVisibilidadAdmin() {
-      const adminElements = document.querySelectorAll(".acciones-admin, #logout-btn, #mostrar-formulario");
-      adminElements.forEach(el => {
-        if (adminActivo) el.classList.remove("hidden-admin");
-        else el.classList.add("hidden-admin");
+      productos.filter(p => filtro === "Todas" || p.categoria === filtro).forEach((producto) => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
+        card.innerHTML = `
+          <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
+          <h4 class="font-bold text-lg">${producto.nombre}</h4>
+          <p class="text-sm text-gray-600">${producto.descripcion}</p>
+          <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
+          <button onclick="eliminarProducto('${producto.id}')" class="mt-2 text-xs text-red-500 hover:underline hidden-admin">Eliminar</button>
+        `;
+        grid.appendChild(card);
       });
+
+      if (adminActivo) {
+        setTimeout(() => {
+          document.querySelectorAll(".hidden-admin").forEach(el => el.classList.remove("hidden-admin"));
+          document.getElementById("logout-btn").classList.remove("hidden-admin");
+          document.getElementById("mostrar-formulario").classList.remove("hidden-admin");
+        }, 0);
+      }
     }
 
-    // Agregar producto
     async function agregarProducto() {
-      const nombre = document.getElementById("nombre").value.trim();
-      const precio = parseFloat(document.getElementById("precio").value.trim());
-      const descripcion = document.getElementById("descripcion").value.trim();
+      const nombre = document.getElementById("nombre").value;
+      const precio = document.getElementById("precio").value;
+      const descripcion = document.getElementById("descripcion").value;
       const categoria = document.getElementById("categoria").value;
-      const imagen = document.getElementById("imagen-url").value.trim();
+      const imagen = document.getElementById("imagen-url").value;
 
-      if (!nombre || isNaN(precio) || !descripcion || !imagen) {
-        alert("Por favor completa todos los campos correctamente.");
+      if (!imagen) {
+        alert("Por favor, ingresa una URL de imagen válida.");
         return;
       }
 
-      await addDoc(productosRef, { nombre, precio, descripcion, categoria, imagen });
+      const nuevoProducto = { nombre, precio, descripcion, categoria, imagen };
+      await addDoc(productosRef, nuevoProducto);
       await cargarProductos();
       ocultarFormulario();
-      alert("Producto agregado correctamente ✅");
     }
 
-    // Editar producto
-    async function editarProducto(id) {
-      const producto = productos.find(p => p.id === id);
-      if (!producto) return;
-
-      productoEditando = id;
-      document.getElementById("nombre").value = producto.nombre;
-      document.getElementById("precio").value = producto.precio;
-      document.getElementById("descripcion").value = producto.descripcion;
-      document.getElementById("categoria").value = producto.categoria;
-      document.getElementById("imagen-url").value = producto.imagen;
-
-      document.getElementById("form-title").textContent = "Editar Producto";
-      document.querySelector("#admin-panel button.bg-green-500").textContent = "Guardar Cambios";
-      document.getElementById("admin-panel").classList.remove("hidden");
-    }
-
-    // Guardar edición
-    async function guardarEdicion() {
-      if (!productoEditando) return agregarProducto();
-
-      const id = productoEditando;
-      const docRef = doc(productosRef, id);
-      const nombre = document.getElementById("nombre").value.trim();
-      const precio = parseFloat(document.getElementById("precio").value.trim());
-      const descripcion = document.getElementById("descripcion").value.trim();
-      const categoria = document.getElementById("categoria").value;
-      const imagen = document.getElementById("imagen-url").value.trim();
-
-      await updateDoc(docRef, { nombre, precio, descripcion, categoria, imagen });
-      productoEditando = null;
-
-      document.getElementById("form-title").textContent = "Agregar Producto";
-      document.querySelector("#admin-panel button.bg-green-500").textContent = "Agregar";
-      ocultarFormulario();
-      await cargarProductos();
-    }
-
-    // Eliminar producto
     async function eliminarProducto(id) {
       await deleteDoc(doc(productosRef, id));
       await cargarProductos();
     }
 
-    // Login admin
-    function showLogin() { document.getElementById("admin-login").classList.remove("hidden"); }
-    function hideLogin() { document.getElementById("admin-login").classList.add("hidden"); }
+    function showLogin() {
+      document.getElementById("admin-login").classList.remove("hidden");
+    }
+
+    function hideLogin() {
+      document.getElementById("admin-login").classList.add("hidden");
+    }
 
     function checkLogin() {
       const input = document.getElementById("admin-pass").value;
       if (input === adminPassword) {
         adminActivo = true;
         hideLogin();
-        actualizarVisibilidadAdmin();
         renderProductos();
-      } else alert("Contraseña incorrecta");
+      } else {
+        alert("Contraseña incorrecta");
+      }
     }
 
-    // Cerrar sesión
     function cerrarSesion() {
       adminActivo = false;
-      productoEditando = null;
-      ocultarFormulario();
-      actualizarVisibilidadAdmin();
+      document.querySelectorAll(".hidden-admin").forEach(el => el.classList.add("hidden-admin"));
+      document.getElementById("admin-panel").classList.add("hidden");
+      document.getElementById("logout-btn").classList.add("hidden-admin");
+      document.getElementById("mostrar-formulario").classList.add("hidden-admin");
       renderProductos();
     }
 
-    // Filtros y paneles
-    function filterCategory(cat) { renderProductos(cat); }
-    function mostrarFormulario() { document.getElementById("admin-panel").classList.remove("hidden"); }
-    function ocultarFormulario() { document.getElementById("admin-panel").classList.add("hidden"); }
+    function filterCategory(cat) {
+      renderProductos(cat);
+    }
 
-    // Exponer funciones
+    function mostrarFormulario() {
+      document.getElementById("admin-panel").classList.remove("hidden");
+    }
+
+    function ocultarFormulario() {
+      document.getElementById("admin-panel").classList.add("hidden");
+    }
+
     window.showLogin = showLogin;
     window.hideLogin = hideLogin;
     window.checkLogin = checkLogin;
@@ -269,11 +224,8 @@
     window.filterCategory = filterCategory;
     window.mostrarFormulario = mostrarFormulario;
     window.ocultarFormulario = ocultarFormulario;
-    window.editarProducto = editarProducto;
-    window.guardarEdicion = guardarEdicion;
 
     window.onload = cargarProductos;
   </script>
 </body>
 </html>
-
