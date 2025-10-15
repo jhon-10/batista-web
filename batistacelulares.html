@@ -81,7 +81,7 @@
   <!-- Botón flotante para agregar producto -->
   <button id="mostrar-formulario" onclick="mostrarFormulario()" class="hidden-admin fixed bottom-6 right-6 bg-pink-600 text-white p-4 rounded-full shadow-lg z-50 scale-hover">+</button>
 
-  <!-- Panel de agregar/editar producto -->
+  <!-- Panel agregar/editar -->
   <div id="admin-panel" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 fade-in">
     <div class="bg-white p-6 rounded-xl shadow-xl w-11/12 max-w-2xl relative">
       <button onclick="ocultarFormulario()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&#10005;</button>
@@ -104,7 +104,7 @@
     </div>
   </div>
 
-  <!-- Firebase -->
+  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -127,34 +127,39 @@
     let productos = [];
     let productoEditando = null;
 
+    // Cargar productos
     async function cargarProductos() {
       const snapshot = await getDocs(productosRef);
       productos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderProductos();
     }
 
+    // Renderizar productos
     function renderProductos(filtro = "Todas") {
       const grid = document.getElementById("product-grid");
       grid.innerHTML = "";
-      productos.filter(p => filtro === "Todas" || p.categoria === filtro).forEach((producto) => {
-        const card = document.createElement("div");
-        card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
-        card.innerHTML = `
-          <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
-          <h4 class="font-bold text-lg">${producto.nombre}</h4>
-          <p class="text-sm text-gray-600">${producto.descripcion}</p>
-          <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
-          <div class="acciones-admin hidden-admin flex justify-between text-xs mt-2">
-            <button onclick="editarProducto('${producto.id}')" class="text-blue-500 hover:underline">Editar</button>
-            <button onclick="eliminarProducto('${producto.id}')" class="text-red-500 hover:underline">Eliminar</button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
+      productos
+        .filter(p => filtro === "Todas" || p.categoria === filtro)
+        .forEach((producto) => {
+          const card = document.createElement("div");
+          card.className = "bg-white p-4 rounded-xl shadow-md flex flex-col scale-hover";
+          card.innerHTML = `
+            <img src="${producto.imagen}" alt="${producto.nombre}" class="w-full h-48 object-cover rounded mb-2">
+            <h4 class="font-bold text-lg">${producto.nombre}</h4>
+            <p class="text-sm text-gray-600">${producto.descripcion}</p>
+            <p class="text-pink-600 font-bold mt-1">$${producto.precio}</p>
+            <div class="acciones-admin hidden-admin flex justify-between text-xs mt-2">
+              <button onclick="editarProducto('${producto.id}')" class="text-blue-500 hover:underline">Editar</button>
+              <button onclick="eliminarProducto('${producto.id}')" class="text-red-500 hover:underline">Eliminar</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
 
       actualizarVisibilidadAdmin();
     }
 
+    // Mostrar/ocultar elementos admin
     function actualizarVisibilidadAdmin() {
       const adminElements = document.querySelectorAll(".acciones-admin, #logout-btn, #mostrar-formulario");
       adminElements.forEach(el => {
@@ -163,6 +168,7 @@
       });
     }
 
+    // Agregar producto
     async function agregarProducto() {
       const nombre = document.getElementById("nombre").value.trim();
       const precio = parseFloat(document.getElementById("precio").value.trim());
@@ -181,12 +187,12 @@
       alert("Producto agregado correctamente ✅");
     }
 
+    // Editar producto
     async function editarProducto(id) {
       const producto = productos.find(p => p.id === id);
       if (!producto) return;
 
       productoEditando = id;
-
       document.getElementById("nombre").value = producto.nombre;
       document.getElementById("precio").value = producto.precio;
       document.getElementById("descripcion").value = producto.descripcion;
@@ -195,10 +201,10 @@
 
       document.getElementById("form-title").textContent = "Editar Producto";
       document.querySelector("#admin-panel button.bg-green-500").textContent = "Guardar Cambios";
-
       document.getElementById("admin-panel").classList.remove("hidden");
     }
 
+    // Guardar edición
     async function guardarEdicion() {
       if (!productoEditando) return agregarProducto();
 
@@ -215,16 +221,17 @@
 
       document.getElementById("form-title").textContent = "Agregar Producto";
       document.querySelector("#admin-panel button.bg-green-500").textContent = "Agregar";
-
       ocultarFormulario();
       await cargarProductos();
     }
 
+    // Eliminar producto
     async function eliminarProducto(id) {
       await deleteDoc(doc(productosRef, id));
       await cargarProductos();
     }
 
+    // Login admin
     function showLogin() { document.getElementById("admin-login").classList.remove("hidden"); }
     function hideLogin() { document.getElementById("admin-login").classList.add("hidden"); }
 
@@ -238,6 +245,7 @@
       } else alert("Contraseña incorrecta");
     }
 
+    // Cerrar sesión
     function cerrarSesion() {
       adminActivo = false;
       productoEditando = null;
@@ -246,10 +254,12 @@
       renderProductos();
     }
 
+    // Filtros y paneles
     function filterCategory(cat) { renderProductos(cat); }
     function mostrarFormulario() { document.getElementById("admin-panel").classList.remove("hidden"); }
     function ocultarFormulario() { document.getElementById("admin-panel").classList.add("hidden"); }
 
+    // Exponer funciones
     window.showLogin = showLogin;
     window.hideLogin = hideLogin;
     window.checkLogin = checkLogin;
@@ -266,5 +276,4 @@
   </script>
 </body>
 </html>
-
 
